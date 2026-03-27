@@ -8,19 +8,42 @@ A production-ready Spring Boot REST API built to simulate and control a **Submer
 
 ---
 
+## 📖 Problem Statement & Rules
+The probe operates within a 2D grid (X, Y) with a configurable size and faces one of four directions (`NORTH`, `SOUTH`, `EAST`, `WEST`). It accepts a sequence of movement commands (`F` for forward, `B` for backward, `L` to turn left, `R` to turn right).
+
+**System Behaviors:**
+- **Boundary Control**: Prevents the probe from moving outside the predefined grid edges.
+- **Obstacle Avoidance**: Halts movement gracefully if the path overlaps with a known blocked coordinate (obstacle).
+- **State Tracking**: Logs and returns all visited positions along with the final coordinate and direction.
+
+---
+
 ## 🎯 Core Features
 
 - **Stateful Navigation**: Tracks the probe's starting position, current facing direction, and an ordered list of all visited coordinates.
-- **Physical Constraints**: Implements hard boundaries (e.g., probe cannot fall off the grid) and obstacle avoidance (e.g., probe halts if path is blocked).
-- **Fail-Fast Validation**: Incoming API requests are strictly validated using Bean Validation annotations. Invalid grids or commands are rejected immediately with structured `400 Bad Request` JSON maps.
-- **Clean Architecture**: Strong boundary enforcement between Web Controllers, Service Orchestrators, and Core Domain Models (Grid, Probe, Position).
-- **100% Test Coverage Strategy**: Validated through extensive Unit and Integration Testing (`MockMvc`) handling edge cases.
+- **Fail-Fast Validation**: Incoming API requests are strictly validated using `jakarta.validation` rules. Invalid grids or commands are rejected immediately with structured `400 Bad Request` messages.
+- **Clean Architecture & SOLID Principles**: Strong boundaries and dependency inversion between Web Controllers, Service Orchestrators, and Domain Models (`Grid`, `Probe`, `Position`).
+- **Swagger Documentation**: Integrated `springdoc-openapi` for visual API exploration. 
+- **Extensive Testing**: Codebase behaviors validated through Unit and Integration Testing (`JUnit 5`, `MockMvc`).
+
+---
+
+## 🏗️ Architecture & Design Decisions
+
+The application flows cleanly through three main layers:
+1. **Controller Layer (`ProbeController`)**: Takes HTTP POST requests, validates JSON bodies, and maps exceptions through a global `@RestControllerAdvice` error handler.
+2. **Service Layer (`ProbeService`)**: Orchestrates the initial domain startup, processing the valid commands string safely.
+3. **Domain Model Layer (`Probe`, `Position`, `Grid`)**: Pure Java object-oriented logic. 
+    - `Position` is immutable.
+    - `Direction` and `Command` are defined via strong **Enums**.
+
+> **Immutability advantage**: Moving the probe algorithmically doesn't mutate existing position coordinates; it returns a new one, avoiding shared-state side-effects.
 
 ---
 
 ## 🚀 How to Run Locally
 
-You do **not** need Docker to run this project. It is built to run cleanly right out of the box using the Maven Wrapper.
+You do **not** need Docker to run this project. It runs right out of the box using the Maven Wrapper.
 
 ### Prerequisites
 - **JDK 21** installed and configured in your `JAVA_HOME`.
@@ -36,7 +59,7 @@ Run the built application:
 ```bash
 java -jar target/*.jar
 ```
-*(Alternatively, you can just run `./mvnw spring-boot:run`)*
+*(Alternatively, you can skip the build and just run `./mvnw spring-boot:run`)*
 
 The API will start locally on port `8080`.
 
@@ -47,12 +70,10 @@ The API will start locally on port `8080`.
 ### Move Probe Endpoint
 Processes a sequence of commands and returns the probe's journey timeline.
 
-`POST /api/probe/move`
+**URL**: `POST /api/probe/move`  
+**Content-Type**: `application/json`
 
-**Headers:**
-`Content-Type: application/json`
-
-**Example Request:**
+#### Request Payload
 ```json
 {
   "startX": 0,
@@ -74,10 +95,11 @@ Processes a sequence of commands and returns the probe's journey timeline.
 | `startY` | `Integer` | ✅ | Starting Y coordinate (must be $\ge$ 0) |
 | `direction`| `String` | ✅ | Initial facing direction: `NORTH`, `SOUTH`, `EAST`, `WEST` |
 | `commands` | `String` | ✅ | Movement string containing only: `F` (Forward), `B` (Backward), `L` (Turn Left), `R` (Turn Right) |
-| `gridSize` | `Integer` | ✅ | Dimension of the square grid (e.g., `5` creates a 5x5 grid from 0,0 to 4,4) |
+| `gridSize` | `Integer` | ✅ | Dimension of the square grid (e.g., `5` creates a grid from 0,0 to 4,4) |
 | `obstacles`| `int[][]` | ❌ | Array of pairs representing blocked coordinates: `[[X1,Y1], [X2,Y2]]` |
 
-**Example Response (200 OK):**
+#### Response (200 OK):
+Returns the final probe position, direction, and step-by-step history trace.
 ```json
 {
     "finalX": 0,
@@ -90,15 +112,23 @@ Processes a sequence of commands and returns the probe's journey timeline.
     ]
 }
 ```
-*Notice in the example above, the probe stopped at `[0,2]` and dropped the final two forward commands because coordinate `[1,2]` was blocked by an obstacle!*
+*Note: The probe stopped early at `[0,2]` ignoring the final commands because coordinate `[1,2]` was blocked!*
 
 ---
 
-## 🛑 Error Handling
+## 📖 Swagger Interactive Docs
 
-The application provides developer-friendly error arrays if validations fail.
+With the application running, view the interactive Open API Swagger documentation in your browser to test endpoints and read schemas visually:
 
-**Example: Sending invalid commands or an invalid direction text**
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+---
+
+## 🛑 Global Error Handling
+
+The application provides developer-friendly error collections if validations fail. Edge cases (invalid direction string, falling off the grid, empty commands matrix) are seamlessly handled.
+
+**Example: Sending invalid commands or an incorrect direction code**
 ```json
 {
     "timestamp": "2026-03-28T01:13:00",
@@ -114,31 +144,17 @@ The application provides developer-friendly error arrays if validations fail.
 
 ---
 
-## 🏗️ Architecture & Design Decisions
-
-This repository adheres strictly to **SOLID Principles**:
-
-1. **Single Responsibility (SRP)**:
-   - `Grid`: Only handles borders and obstacles.
-   - `Probe`: Only calculates coordinates and turn states.
-   - `GlobalExceptionHandler`: Isolates all messy HTTP status code logic out of the controllers.
-2. **Immutability**:
-   Core domain objects like `Position` are strictly immutable. Moving the probe does not overwrite the old coordinate; it returns a new mathematical coordinate, preventing unintended state-mutation bugs.
-3. **Defensive Coding**: 
-   The probe's visited timeline is exposed as an `unmodifiableList`. External services cannot accidentally wipe or tamper with the history logs.
-
----
-
 ## 🧪 Testing
 
-The codebase includes over **110+ passing test cases**, split into:
-- **Domain Unit Tests**: Ensures core engine rules (e.g., turning left from North equals West) calculate perfectly without Spring overhead.
-- **Integration Tests**: Employs `@WebMvcTest` to shoot mock JSON requests through the Spring DispatcherServlet to verify JSON parsing and Exception matching.
+The codebase includes over **110+ passing JUnit 5 test cases** ensuring core movement, matrix turning logic, boundary conditions, and obstacle avoidance are robust.
 
 **Run the tests via:**
 ```bash
 ./mvnw test
 ```
+
+- **Domain Unit Tests**: Ensures core logic (like enum evaluations for turning from North to West) operates fully isolated from Spring.
+- **Integration Tests**: Employs `@WebMvcTest` with Spring context for end-to-end `Controller -> Service` verification, checking input validation loops and exceptions.
 
 ---
 
@@ -146,7 +162,7 @@ The codebase includes over **110+ passing test cases**, split into:
 
 This application is configured for seamless deployment to "Platform as a Service" providers like **Render.com**. 
 
-The configuration `server.port=${PORT:8080}` is explicitly set in `application.properties` so the web server automatically binds to whatever dynamic port Render provides in the environment.
+The configuration binds automatically to environment port variables (e.g. `server.port=${PORT:8080}`).
 
 **Steps to Deploy to Render:**
 1. Connect this GitHub repository.
