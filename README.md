@@ -3,6 +3,9 @@
 ![Java](https://img.shields.io/badge/Java-21-orange.svg) 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen.svg)
 ![Build](https://img.shields.io/badge/build-passing-success)
+![Deployment](https://img.shields.io/badge/deployment-live-success)
+
+**🚀 Live Demo:** [https://ocean-explorer-apier-api.onrender.com/](https://ocean-explorer-apier-api.onrender.com/)
 
 A production-ready Spring Boot REST API built to simulate and control a **Submersible Probe** exploring the ocean floor. The application safely navigates a 2D grid, parsing movement commands while strictly enforcing boundary limits and avoiding obstacles.
 
@@ -67,6 +70,11 @@ The API will start locally on port `8080`.
 
 ## 📡 API Reference
 
+### Live API Base URL
+```
+https://ocean-explorer-apier-api.onrender.com
+```
+
 ### Move Probe Endpoint
 Processes a sequence of commands and returns the probe's journey timeline.
 
@@ -120,7 +128,9 @@ Returns the final probe position, direction, and step-by-step history trace.
 
 With the application running, view the interactive Open API Swagger documentation in your browser to test endpoints and read schemas visually:
 
-[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+**Local**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+**Live**: [https://ocean-explorer-apier-api.onrender.com/swagger-ui/index.html](https://ocean-explorer-apier-api.onrender.com/swagger-ui/index.html)
 
 ---
 
@@ -173,10 +183,11 @@ This application is production-ready and configured for deployment on **Render.c
 ### Available Endpoints
 
 Once deployed, your service will be available at:
-- **Root**: `https://your-app.onrender.com/` - API information and available endpoints
-- **Health Check**: `https://your-app.onrender.com/actuator/health` - Service health status
-- **API Info**: `https://your-app.onrender.com/actuator/info` - Application metadata
-- **Probe API**: `https://your-app.onrender.com/api/probe/move` - Main probe control endpoint
+- **Root**: [https://ocean-explorer-apier-api.onrender.com/](https://ocean-explorer-apier-api.onrender.com/) - API information and available endpoints
+- **Health Check**: [https://ocean-explorer-apier-api.onrender.com/actuator/health](https://ocean-explorer-apier-api.onrender.com/actuator/health) - Service health status
+- **API Info**: [https://ocean-explorer-apier-api.onrender.com/actuator/info](https://ocean-explorer-apier-api.onrender.com/actuator/info) - Application metadata
+- **Probe API**: [https://ocean-explorer-apier-api.onrender.com/api/probe/move](https://ocean-explorer-apier-api.onrender.com/api/probe/move) - Main probe control endpoint
+- **Swagger UI**: [https://ocean-explorer-apier-api.onrender.com/swagger-ui/index.html](https://ocean-explorer-apier-api.onrender.com/swagger-ui/index.html) - Interactive API documentation
 
 ### Docker Deployment
 
