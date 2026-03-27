@@ -158,14 +158,40 @@ The codebase includes over **110+ passing JUnit 5 test cases** ensuring core mov
 
 ---
 
-## ☁️ Deployment (Ready for Render)
+## ☁️ Deployment (Render)
 
-This application is configured for seamless deployment to "Platform as a Service" providers like **Render.com**. 
+This application is production-ready and configured for deployment on **Render.com**.
 
-The configuration binds automatically to environment port variables (e.g. `server.port=${PORT:8080}`).
+### Deployment Configuration
 
-**Steps to Deploy to Render:**
-1. Connect this GitHub repository.
-2. Select **Web Service**.
-3. Build Command: `./mvnw clean package`
-4. Start Command: `java -jar target/*.jar`
+**Render Settings:**
+- **Type**: Web Service
+- **Environment**: Docker
+- **Health Check Path**: `/actuator/health`
+- **Port**: Automatically configured via `PORT` environment variable
+
+### Available Endpoints
+
+Once deployed, your service will be available at:
+- **Root**: `https://your-app.onrender.com/` - API information and available endpoints
+- **Health Check**: `https://your-app.onrender.com/actuator/health` - Service health status
+- **API Info**: `https://your-app.onrender.com/actuator/info` - Application metadata
+- **Probe API**: `https://your-app.onrender.com/api/probe/move` - Main probe control endpoint
+
+### Docker Deployment
+
+The included `Dockerfile` uses a multi-stage build:
+1. **Builder stage**: Compiles the application using Maven
+2. **Runtime stage**: Runs the application with JRE only (smaller image)
+
+The application automatically binds to the port provided by Render via the `PORT` environment variable.
+
+### Manual Deployment Steps
+
+1. Connect your GitHub repository to Render
+2. Create a new Web Service
+3. Select **Docker** as the environment
+4. Set Health Check Path to `/actuator/health`
+5. Deploy!
+
+Render will automatically rebuild and redeploy on every push to your main branch.
