@@ -32,10 +32,7 @@ WORKDIR /app
 # Copy built jar from builder
 COPY --from=builder /app/target/*.jar app.jar
 
-# Render / Cloud compatibility
-ENV PORT=8080
-
-# Expose port
+# Expose port (Render will set PORT env var dynamically)
 EXPOSE 8080
 
 # Run app

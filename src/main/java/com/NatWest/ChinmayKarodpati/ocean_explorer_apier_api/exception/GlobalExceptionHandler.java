@@ -43,7 +43,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
-        log.warn("Resource not found: {}", ex.getResourcePath());
+        // Don't log warnings for common missing resources like favicon
+        String resourcePath = ex.getResourcePath();
+        if (!resourcePath.contains("favicon") && !resourcePath.equals("/")) {
+            log.warn("Resource not found: {}", resourcePath);
+        }
         return buildErrorResponse(HttpStatus.NOT_FOUND, "The requested resource was not found", null);
     }
 
